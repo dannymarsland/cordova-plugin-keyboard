@@ -31,7 +31,9 @@
 
 @end
 
-@implementation CDVKeyboard
+@implementation CDVKeyboard {
+    CGPoint oldOffset;
+}
 
 - (id)settingForKey:(NSString*)key
 {
@@ -43,6 +45,7 @@
 - (void)pluginInitialize
 {
     NSString* setting = nil;
+    oldOffset = CGPointMake(0,0);
 
     setting = @"HideKeyboardFormAccessoryBar";
     if ([self settingForKey:setting]) {
@@ -79,6 +82,7 @@
                                                 object:nil
                                                  queue:[NSOperationQueue mainQueue]
                                             usingBlock:^(NSNotification* notification) {
+            oldOffset = self.webView.scrollView.contentOffset;
             [weakSelf.commandDelegate evalJs:@"Keyboard.fireOnShowing();"];
             weakSelf.keyboardIsVisible = YES;
                                             }];
@@ -213,6 +217,9 @@ static IMP WKOriginalImp;
             scrollView.bounds = CGRectMake(scrollView.bounds.origin.x, maxY,
                                            scrollView.bounds.size.width, scrollView.bounds.size.height);
         }
+    }
+    if (self.disableScrollingInShrinkView && _keyboardIsVisible) {
+        scrollView.contentOffset = oldOffset;
     }
 }
 
